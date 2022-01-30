@@ -1,6 +1,10 @@
 # A single player tictactoe game player, the bot make random moves
 
 
+import pygame
+from sys import exit
+
+
 def draw_board(board):
     """
         Input: list of ints
@@ -68,6 +72,32 @@ def main():
         Initialises and determines the flow the game
     """
 
+    pygame.init()
+    HEIGHT = 300
+    WIDTH = 300
+
+    screen = pygame.display.set_mode((HEIGHT, WIDTH))
+    screen.fill('Dark grey')
+
+    pygame.display.set_caption('Tictactoe')
+    clock = pygame.time.Clock()
+
+    test_surface = pygame.Surface((HEIGHT/3, WIDTH/3))
+    test_surface.fill('Light grey')
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+        screen.blit(test_surface, (0, HEIGHT/3))
+        screen.blit(test_surface, (HEIGHT/3, 0))
+        screen.blit(test_surface, (HEIGHT/3, 2*HEIGHT/3))
+        screen.blit(test_surface, (2*HEIGHT/3, HEIGHT/3))
+        # Draw and update elements
+        pygame.display.update()
+        clock.tick(24)
 
     return 0
 

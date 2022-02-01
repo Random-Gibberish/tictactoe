@@ -8,7 +8,7 @@ from sys import exit
 
 def draw_board(player_symbol, bot_symbol, board):
     """
-        Input: string, list of ints
+        Input: string, string, list of strings
         Output:
         Renders a window and siplays the board.
     """
@@ -24,14 +24,8 @@ def draw_board(player_symbol, bot_symbol, board):
     clock = pygame.time.Clock()
     game_font = pygame.font.Font(None, 100)
 
-    board = pygame.Surface((HEIGHT/3, WIDTH/3))
-    board.fill('Light grey')
-
-    player_text = game_font.render(player_symbol, True, 'Black')
-    bot_text = game_font.render(bot_symbol, True, 'Black')
-
-    player_rect = player_text.get_rect(center = (HEIGHT/6, HEIGHT/6))
-    bot_rect = player_text.get_rect(center = (3*HEIGHT/6, 3*HEIGHT/6))
+    board_display = pygame.Surface((HEIGHT/3, WIDTH/3))
+    board_display.fill('Light grey')
 
     while True:
         for event in pygame.event.get():
@@ -40,19 +34,37 @@ def draw_board(player_symbol, bot_symbol, board):
                 exit()
 
         # Board format
-        screen.blit(board, (0, HEIGHT/3))
-        screen.blit(board, (HEIGHT/3, 0))
-        screen.blit(board, (HEIGHT/3, 2*HEIGHT/3))
-        screen.blit(board, (2*HEIGHT/3, HEIGHT/3))
+        screen.blit(board_display, (0, HEIGHT/3))
+        screen.blit(board_display, (HEIGHT/3, 0))
+        screen.blit(board_display, (HEIGHT/3, 2*HEIGHT/3))
+        screen.blit(board_display, (2*HEIGHT/3, HEIGHT/3))
 
-        screen.blit(player_text, player_rect)
-        screen.blit(bot_text, bot_rect)
+        board = player_move(player_symbol, board)
+
+        for square, symbol in enumerate(board):
+            if symbol == '':
+                continue
+
+            coordinates = get_coordinates(square)
+            square_text = game_font.render(symbol, True, 'Black')
+            square_rect = square_text.get_rect(center = coordinates)
+            screen.blit(square_text, square_rect)
 
         # Draw and update elements
         pygame.display.update()
         clock.tick(24)
 
     return 0
+
+
+def get_coordinates(square):
+    """
+        Input: int, list of strings
+    """
+
+    board_coordinates = (square//3 + 50, square%2 + 50)
+
+    return board_coordinates
 
 
 def pick_a_side():
@@ -68,8 +80,10 @@ def pick_a_side():
         player_symbol = input().upper()
         bot_symbol = 'X'
 
+        if player_symbol == 'O':
+            break
         if player_symbol == 'X':
-            bot_symbol == 'O'
+            bot_symbol = 'O'
             break
 
         print("Invalid selection! Try again.")
@@ -180,10 +194,9 @@ def main():
         Initialises and determines the flow the game
     """
 
-    player_symbol = pick_a_side()
+    player_symbol, bot_symbol = pick_a_side()
     board = ['' for _ in range(9)]
-    print(board)
-    draw_board(player_symbol, board)
+    draw_board(player_symbol, bot_symbol, board)
 
     return 0
 

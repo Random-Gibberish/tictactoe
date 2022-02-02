@@ -27,10 +27,15 @@ def draw_board(player_symbol, bot_symbol, board):
     board_display = pygame.Surface((HEIGHT/3, WIDTH/3))
     board_display.fill('Light grey')
 
+    is_players_move = True
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
+                exit()
+            if is_full(board):
+                print("It's a tie!")
                 exit()
 
         # Board format
@@ -39,7 +44,13 @@ def draw_board(player_symbol, bot_symbol, board):
         screen.blit(board_display, (HEIGHT/3, 2*HEIGHT/3))
         screen.blit(board_display, (2*HEIGHT/3, HEIGHT/3))
 
-        board = player_move(player_symbol, board)
+        if is_players_move:
+            board = player_move(player_symbol, board)
+        else:
+            board = bot_move(bot_symbol, board)
+
+        is_players_move = (is_players_move + 1) % 2
+        print(is_players_move, board)
 
         for square, symbol in enumerate(board):
             if symbol == '':
@@ -115,18 +126,6 @@ def player_move(player_symbol, board):
     return board
 
 
-def switch_player(is_players_move):
-    """
-        Input: boolean
-        Output: boolean
-        Switches boolean value.
-    """
-
-    is_players_move = isplayers_move + 1 % 2
-
-    return is_players_move
-
-
 def bot_move(bot_symbol, board):
     """
         Input: list of ints
@@ -135,12 +134,12 @@ def bot_move(bot_symbol, board):
     """
 
     while True:
-        move = random.randint(0, 9)
+        move = random.randint(0, 8)
 
         if board[move] == '':
+            board[move] = bot_symbol
+            print(move, board)
             break
-
-    board[move] = bot_symbol
 
     return board
 
@@ -148,28 +147,26 @@ def bot_move(bot_symbol, board):
 def is_full(board):
     """
         Input: list of ints
-        Output: boolean, int
-        If False the game continues, if True, the board is full. It is a tie.
+        Output: boolean
+        If False the game continues, if True, the board is full, it's a tie.
     """
 
     for square in board:
         if square == '':
-            return False, -1
+            return False
 
-    return True, -1
+    return True
 
 
 def three_in_a_row(board):
     """
         Input: list of ints
-        Output: (boolean, int)
-        Checks if there are 3 symbols in a row and returns either:
-            True, int
-            False, int
+        Output: boolean
+        Checks if there are 3 symbols in a row.
         The int represents one of the squares of the winning line
     """
 
-    return are_three_in_a_row, case
+    return are_three_in_a_row
 
 
 def is_winner(player_symbol, case):
@@ -179,9 +176,7 @@ def is_winner(player_symbol, case):
         Prints a string to stdout announcing the outcome of the game.
     """
 
-    if three_in_a_row():
-        print("It's a tie!")
-    elif board[case] == player_symbol:
+    if board[case] == player_symbol:
         print("You won!")
     else:
         print("You lose!")

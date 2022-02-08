@@ -1,87 +1,10 @@
-# A single player tictactoe game player, the bot make random moves
-
-
 import pygame
 import random
 from sys import exit
 
 
-def draw_board(player_symbol, bot_symbol, board):
-    """
-        Input: string, string, list of strings
-        Output:
-        Renders a window and siplays the board.
-    """
-
-    pygame.init()
-    HEIGHT = 300
-    WIDTH = 300
-
-    screen = pygame.display.set_mode((HEIGHT, WIDTH))
-    screen.fill('Dark grey')
-
-    pygame.display.set_caption('Tictactoe')
-    clock = pygame.time.Clock()
-    game_font = pygame.font.Font(None, 100)
-
-    board_display = pygame.Surface((HEIGHT/3, WIDTH/3))
-    board_display.fill('Light grey')
-
-    is_players_move = True
-
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-            if is_full(board):
-                print("It's a tie!")
-                exit()
-
-        # Board format
-        screen.blit(board_display, (0, HEIGHT/3))
-        screen.blit(board_display, (HEIGHT/3, 0))
-        screen.blit(board_display, (HEIGHT/3, 2*HEIGHT/3))
-        screen.blit(board_display, (2*HEIGHT/3, HEIGHT/3))
-
-        if is_players_move:
-            board = player_move(player_symbol, board)
-        else:
-            board = bot_move(bot_symbol, board)
-
-        is_players_move = (is_players_move + 1) % 2
-        print(is_players_move, board)
-
-        for square, symbol in enumerate(board):
-            if symbol == '':
-                continue
-
-            coordinates = get_coordinates(square)
-            square_text = game_font.render(symbol, True, 'Black')
-            square_rect = square_text.get_rect(center = coordinates)
-            screen.blit(square_text, square_rect)
-
-        # Draw and update elements
-        pygame.display.update()
-        clock.tick(24)
-
-    return 0
-
-
-def get_coordinates(square):
-    """
-        Input: int, list of strings
-    """
-
-    board_coordinates = (square//3 + 50, square%2 + 50)
-
-    return board_coordinates
-
-
 def pick_a_side():
     """
-        Input:
-        Output: string
         Prompts the player to select 'X' or 'O'
     """
 
@@ -89,47 +12,37 @@ def pick_a_side():
 
     while True:
         player_symbol = input().upper()
-        bot_symbol = 'X'
 
         if player_symbol == 'O':
-            break
+            bot_symbol = 'X'
+            return player_symbol, bot_symbol
+
         if player_symbol == 'X':
             bot_symbol = 'O'
-            break
+            return player_symbol, bot_symbol
 
         print("Invalid selection! Try again.")
-
-    return player_symbol, bot_symbol
 
 
 def player_move(player_symbol, board):
     """
-        Input: string, list of ints
-        Output: list of ints
         Asks for the players move and places it on the board.
     """
 
-    print("Your move! Pick 'row column' between 1 and 3: ")
-
+    print("Enter 'row column' to make your move.")
     while True:
         player_move = input().split()
-
         move = 3 * (int(player_move[0]) - 1) + (int(player_move[1]) - 1)
 
         if board[move] == '':
-            break
-
-        print("Square taken, pick another one!")
-
-    board[move] = player_symbol
-
-    return board
+            board[move] = player_symbol
+            return board
+        else:
+            print("Square taken, pick another one!")
 
 
 def bot_move(bot_symbol, board):
     """
-        Input: list of ints
-        Output:
         Randomly selects the bot's move
     """
 
@@ -138,17 +51,12 @@ def bot_move(bot_symbol, board):
 
         if board[move] == '':
             board[move] = bot_symbol
-            print(move, board)
-            break
-
-    return board
+            return board
 
 
 def is_full(board):
     """
-        Input: list of ints
-        Output: boolean
-        If False the game continues, if True, the board is full, it's a tie.
+        If False the game continues. If True, the board is full and it's a tie.
     """
 
     for square in board:
@@ -160,41 +68,108 @@ def is_full(board):
 
 def three_in_a_row(board):
     """
-        Input: list of ints
-        Output: boolean
-        Checks if there are 3 symbols in a row.
-        The int represents one of the squares of the winning line
+        If False the game continues. If True calls is_winner().
     """
 
-    return are_three_in_a_row
+    cases = [board[0] == board[1] == board[2] != '',
+            board[3] == board[4] == board[5] != '',
+            board[6] == board[7] == board[8] != '',
+            board[0] == board[3] == board[6] != '',
+            board[1] == board[4] == board[7] != '',
+            board[2] == board[5] == board[8] != '',
+            board[0] == board[4] == board[8] != '',
+            board[2] == board[4] == board[6] != '']
+
+    for case_number, case in enumerate(cases):
+        if case:
+            is_winner(player_symbol, case_number, board)
+            return True
+
+    return False
 
 
-def is_winner(player_symbol, case):
+def is_winner(player_symbol, case_number, board):
     """
-        Input: string, int
-        Output:
-        Prints a string to stdout announcing the outcome of the game.
+        If True prints 'You won!'. If False printa 'You lost!'..
     """
 
-    if board[case] == player_symbol:
-        print("You won!")
-    else:
-        print("You lose!")
+    victor_cases = [case_number in [0, 3, 6] and board[0] == player_symbol,
+            case_number in [5, 7] and board[2] == player_symbol,
+            case_number == 1 and board[3] == player_symbol,
+            case_number in [2, 4] and board[7] == player_symbol]
 
-    return 0
+    for victor_case in victor_cases:
+        if victor_case:
+            print("You won!")
+            return True
 
+    print("You lost!")
 
-def main():
-    """
-        Initialises and determines the flow the game
-    """
-
-    player_symbol, bot_symbol = pick_a_side()
-    board = ['' for _ in range(9)]
-    draw_board(player_symbol, bot_symbol, board)
-
-    return 0
+    return True
 
 
 if __name__ == '__main__':
-    main()
+    player_symbol, bot_symbol = pick_a_side()
+
+    board = ['' for _ in range(9)]
+    pygame.init()
+
+    # Window and board dimensions
+    HEIGHT = 300
+    height = HEIGHT/3
+
+    pygame.display.set_caption('Tictactoe')
+    clock = pygame.time.Clock()
+    game_font = pygame.font.Font(None, 100)
+
+    screen = pygame.display.set_mode((HEIGHT, HEIGHT))
+    screen.fill('Dark grey')
+
+    board_display = pygame.Surface((height, height))
+    board_display.fill('Light grey')
+
+    is_players_move = True
+
+    while True:
+        # Draw and update elements
+        pygame.display.update()
+        clock.tick(24)
+
+        # Quit game in case of interuption
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+        # Board format
+        for i in range(1, 8, 2):
+            square = (height * (i // 3), height * (i % 3))
+            screen.blit(board_display, square)
+
+        if not three_in_a_row(board) and not is_full(board):
+            board = player_move(player_symbol, board)
+
+        if not three_in_a_row(board) and not is_full(board):
+            board = bot_move(bot_symbol, board)
+
+        if three_in_a_row(board):
+            pygame.quit()
+            exit()
+
+        if is_full(board):
+            print("It's a tie!")
+            pygame.quit()
+            exit()
+
+        print(board[:3])
+        print(board[3:6])
+        print(board[6:])
+
+        for num, symbol in enumerate(board):
+            if symbol == '':
+                continue
+
+            coords = (height * (num%3 + 1/2), height * (num//3 + 1/2))
+            square_text = game_font.render(symbol, True, 'Black')
+            square_rect = square_text.get_rect(center = coords)
+            screen.blit(square_text, square_rect)
